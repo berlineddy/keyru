@@ -1,0 +1,13 @@
+[package]
+name = "keyru"
+version = "0.1.0"
+authors = ["Eddy Stefes <eduard.stefes@gmail.com>"]
+
+[features]
+default = ["gtk/v3_10", "v3_10"]
+v3_10=[]
+
+[dependencies]
+gtk = "*"
+keepass = "*"
+dbox = "*"
