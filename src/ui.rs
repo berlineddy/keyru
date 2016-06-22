@@ -17,7 +17,7 @@ pub struct Ui {
 }
 
 impl Ui {
-    pub fn new() -> Ui {
+    pub fn new(app: Arc<Mutex<App>>) -> Ui {
         if gtk::init().is_err() {
             panic!("Failed to initialize GTK.");
         }
@@ -27,24 +27,23 @@ impl Ui {
             builder: Some(Arc::new(Mutex::new(builder))),
             main: None,
             about: None,
-            app: None,
+            app: Some(app),
             passwd: None,
         }
     }
 
-    pub fn prepare(&mut self, app: Arc<Mutex<App>>) {
-    
+    pub fn prepare_mainwindow(&mut self) -> Arc<Mutex<Window>>{
+
         let _b = self.builder.as_ref().unwrap();
         let builder = _b.lock().unwrap().clone();
-        
-        self.app = Some(app);
+
         self.main = Some(Arc::new(Mutex::new(builder.get_object("mainWindow").unwrap())));
         self.about = Some(Arc::new(Mutex::new(builder.get_object("aboutDialog").unwrap())));
         self.passwd = Some(Arc::new(Mutex::new(builder.get_object("passwordDialog").unwrap())));
-        
+
         let _m = self.main.as_ref().unwrap().clone();
         let ref window: Window = *_m.lock().unwrap();
-        
+
         let new_button: Widget = builder.get_object("newMenuItem").unwrap();
         let save_button: Widget = builder.get_object("saveMenuItem").unwrap();
         let save_as_button: Widget = builder.get_object("saveAsMenuItem").unwrap();
@@ -55,7 +54,7 @@ impl Ui {
         let open_button: MenuItem = builder.get_object("openMenuItem").unwrap();
         let app_o = self.app.as_ref().unwrap().clone();
         let passwd_o = self.passwd.as_ref().unwrap().clone();
-        
+
         open_button.connect_button_release_event(move |_b, _e| {
             let file_open = FileChooserDialog::new(Some("Open File"),
                                                    Some(&Window::new(WindowType::Popup)),
@@ -75,7 +74,7 @@ impl Ui {
         // -------------------------------------------------------
         let about_button: Widget = builder.get_object("aboutMenuItem").unwrap();
         let about_o = self.about.as_ref().unwrap().clone();
-        
+
         about_button.connect_button_release_event(move |_b, _e| {
             let ref about = *about_o.lock().unwrap();
             about.run();
@@ -93,13 +92,17 @@ impl Ui {
             gtk::main_quit();
             Inhibit(false)
         });
+
+        self.main.as_ref().unwrap().clone()
     }
 
-    pub fn run(&self) {
-        let _w = self.main.as_ref().unwrap().clone();
-        let ref main = *_w.lock().unwrap();
-        main.show_all();
+    pub fn open_file(&self) {
+
+    }
+
+    pub fn run(main : Arc<Mutex<Window>>) {
+        let _w = main.as_ref().lock().unwrap();
+        _w.show_all();
         gtk::main();
     }
 }
-
